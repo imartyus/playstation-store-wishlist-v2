@@ -1,0 +1,31 @@
+{
+	"name": "PlayStation Store Wishlist",
+	"description": "Keep track of the games you want to buy on PSN Store and their prices.",
+	"version": "2.0.0",
+	"author": "imartyus",
+	"manifest_version": 3,
+	"action": {
+	  "default_popup": "index.html",
+	  "default_icon": {
+		  "48": "ps-icon-48.png",
+		  "128": "ps-icon-128.png"
+	  }
+	},
+	"icons": {
+	  "48": "ps-icon-48.png",
+	  "128": "ps-icon-128.png"
+	},
+	"background": {
+	  "service_worker": "background.js",
+	  "type": "module"
+	},
+	"permissions": [
+	  "activeTab",
+	  "alarms",
+	  "storage"
+	],
+	"host_permissions": [
+	  "https://store.playstation.com/*",
+	  "https://www.playstation.com/*"
+	]
+  }

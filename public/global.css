@@ -1,0 +1,47 @@
+:root {
+	--color-blue: #00439c;
+	--color-green: green;
+	--color-lightgreen: darkseagreen;
+	--color-gray: darkgray;
+	--color-error: orangered;
+	--color-warn: orange;
+	--color-grey: grey;
+	--color-white: white;
+	--text-color: white;
+	--bg-color: #1f1f1f;
+}
+
+@font-face {
+	font-family: 'Roboto';
+	font-style: normal;
+	font-weight: 400;
+	src: url(/fonts/Roboto-Regular.ttf) format('truetype');
+}
+
+body {
+	background-color: var(--bg-color);
+	font-family: "Roboto", arial, sans-serif;
+	width: 500px;
+	padding: 15px 20px 10px;
+	margin: 0px;
+	min-height: 100px;
+	color: var(--text-color);
+}
+
+button {
+	font-family: "Roboto", arial, sans-serif;
+}
+
+.btn {
+	padding: 8px 10px;
+	background-color: var(--color-blue);
+	color: var(--color-white);
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.btn:disabled {
+	background-color: var(--color-grey);
+	cursor: not-allowed;
+}

@@ -1,26 +1,29 @@
 import { getWishlist, updateBadge, updateWishlist } from './browserApi'
 import type { WishlistItem } from '../types'
 
-const priceQuery = "span[data-qa='mfeCtaMain#offer0#finalPrice']"
-const ogPriceQuery = "span[data-qa='mfeCtaMain#offer0#originalPrice']"
-const saleEndsQuery = "span[data-qa='mfeCtaMain#offer0#discountDescriptor']"
-const nameQuery = 'h1'
+function pickBetween(input: string, start: string, end: string) {
+	const parsed_1 = input.split(start)
+	if (parsed_1.length > 1) {
+		const parsed_2 = parsed_1[1].split(end)
+		return parsed_2[0]
+	}
+	return null
+}
 
 export async function fetchAndScrapeUrl(url: string): Promise<WishlistItem> {
 	try {
 		const res = await fetch(url)
 		const html = await res.text()
-		const doc = htmlToElement(html) as HTMLElement
-		const price = doc.querySelector(priceQuery) as HTMLElement
-		const ogPrice = doc.querySelector(ogPriceQuery) as HTMLElement
-		const saleEnds = doc.querySelector(saleEndsQuery) as HTMLElement
-		const title = doc.querySelector(nameQuery) as HTMLElement
+		const title = pickBetween(html, 'data-qa="mfe-game-title#name">', '</h1>')
+		const price = pickBetween(html, '"discountedPrice":"', '",')
+		const ogPrice = pickBetween(html, '"originalPrice":"', '",') || ''
+		const saleEnds = pickBetween(html, 'data-qa="mfeCtaMain#offer0#discountDescriptor" class="psw-c-t-2">', '</span>') || ''
 
 		return {
-			title: title.innerText.trim(),
-			price: price.innerText,
-			ogPrice: ogPrice ? ogPrice.innerText : '',
-			saleEnds: saleEnds ? saleEnds.innerText : '',
+			title,
+			price,
+			ogPrice: price === ogPrice ? '' : ogPrice,
+			saleEnds,
 			url
 		}
 	} catch (err) {
@@ -28,17 +31,10 @@ export async function fetchAndScrapeUrl(url: string): Promise<WishlistItem> {
 	}
 }
 
-function htmlToElement(html: string) {
-	const template = document.createElement('template')
-	html = html.trim() // Never return a text node of whitespace as the result
-	template.innerHTML = html
-	return template.content.cloneNode(true)
-}
-
-export async function refreshPriceData(): Promise<void> {
-	return await new Promise((resolve) => {
+export function refreshPriceData(): Promise<void> {
+	return new Promise((resolve) => {
 		getWishlist(wishlist => {
-			if (wishlist.items.length === 0) {
+			if (!wishlist.items.length) {
 				return resolve()
 			}
 
@@ -48,7 +44,7 @@ export async function refreshPriceData(): Promise<void> {
 				.then(results => {
 					const updatedItems = wishlist.items.map(item => {
 						const updatedItem = results.find(el => el.status === 'fulfilled' && el.value.url === item.url)
-						// @ts-expect-error
+						// @ts-ignore
 						return updatedItem ? updatedItem.value : { ...item, outdated: true }
 					})
 

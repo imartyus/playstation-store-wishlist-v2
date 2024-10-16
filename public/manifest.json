@@ -1,7 +1,7 @@
 {
 	"name": "PlayStation Store Wishlist",
-	"description": "Keep track of the games you want to buy on PSN Store and their prices.",
-	"version": "2.0.0",
+	"description": "Keep track of the games you want to buy on PlayStation Store and their prices.",
+	"version": "2.0.1",
 	"author": "imartyus",
 	"manifest_version": 3,
 	"action": {

@@ -10,6 +10,7 @@
 		fetchAndScrapeUrl,
 		refreshPriceData,
 	} from "./helpers/pageScraping";
+	import {NUMERIC_REGEXP} from './constants'
 	import orderBy from "lodash.orderby";
 
 	let onStoreUrl: string;
@@ -22,7 +23,7 @@
 	let refreshing: boolean;
 
 	function getSortedList(_sortBy, _sortOrder, _list) {
-		const NUMERIC_REGEXP = /[-]{0,1}[\d]*[.]{0,1}[\d]+/g; // extract price number
+		const filteredList = _list.filter(item => Boolean(item.price.match(NUMERIC_REGEXP)))
 
 		const sort = (item) => {
 			if (_sortBy === "price") {
@@ -31,7 +32,7 @@
 			return item[_sortBy];
 		};
 
-		return orderBy(_list, sort, _sortOrder);
+		return orderBy(filteredList, sort, _sortOrder);
 	}
 
 	function addGameFromTab() {

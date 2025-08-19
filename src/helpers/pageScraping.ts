@@ -1,64 +1,80 @@
 import { getWishlist, updateBadge, updateWishlist } from './browserApi'
+import { NUMERIC_REGEXP } from '../constants'
 import type { WishlistItem } from '../types'
 
-function pickBetween(input: string, start: string, end: string) {
-	const parsed_1 = input.split(start)
-	if (parsed_1.length > 1) {
-		const parsed_2 = parsed_1[1].split(end)
-		return parsed_2[0]
-	}
-	return null
+function pickBetween (input: string, start: string, end: string) {
+  const parsed_1 = input.split(start)
+  if (parsed_1.length > 1) {
+    const parsed_2 = parsed_1[1].split(end)
+    return parsed_2[0]
+  }
+  return null
 }
 
-export async function fetchAndScrapeUrl(url: string): Promise<WishlistItem> {
-	try {
-		const res = await fetch(url)
-		const html = await res.text()
-		const title = pickBetween(html, 'data-qa="mfe-game-title#name">', '</h1>') || pickBetween(html, '<h1 class="game-title">', '</h1>')
-		const price = pickBetween(html, '"discountedPrice":"', '",')
-		const ogPrice = pickBetween(html, '"originalPrice":"', '",') || ''
-		const saleEnds = pickBetween(html, 'data-qa="mfeCtaMain#offer0#discountDescriptor" class="psw-c-t-2">', '</span>') || ''
-
-		return {
-			title,
-			price,
-			ogPrice: price === ogPrice ? '' : ogPrice,
-			saleEnds,
-			url
-		}
-	} catch (err) {
-		throw err
-	}
+function getPrice (html: string) { // Sometimes price field has random strings, so we do 2 tries
+  const firstTry = pickBetween(html, '"discountedPrice":"', '",')
+  if (firstTry && Boolean(firstTry.match(NUMERIC_REGEXP))) {
+    return firstTry
+  }
+  const parsed_1 = html.split('"discountedPrice":"')
+  if (parsed_1.length > 1) {
+    const parsed_2 = parsed_1[2].split('",')
+    return parsed_2[0]
+  }
+  return null
 }
 
-export function refreshPriceData(): Promise<void> {
-	return new Promise((resolve) => {
-		getWishlist(wishlist => {
-			if (!wishlist.items.length) {
-				return resolve()
-			}
+export async function fetchAndScrapeUrl (url: string): Promise<WishlistItem> {
+  try {
+    const res = await fetch(url)
+    const html = await res.text()
+    const title = pickBetween(html, 'data-qa="mfe-game-title#name">', '</h1>') || pickBetween(html, '<h1 class="game-title">', '</h1>')
+    const price = getPrice(html)
+    const ogPrice = pickBetween(html, '"originalPrice":"', '",') || ''
+    const saleEnds = pickBetween(html, 'data-qa="mfeCtaMain#offer0#discountDescriptor" class="psw-c-t-2">', '</span>') || ''
 
-			const requests = wishlist.items.map(item => fetchAndScrapeUrl(item.url))
+    // const nextData = pickBetween(html, '<script id="__NEXT_DATA__" type="application/json">', '</script>')
 
-			Promise.allSettled(requests)
-				.then(results => {
-					const updatedItems = wishlist.items.map(item => {
-						const updatedItem = results.find(el => el.status === 'fulfilled' && el.value.url === item.url)
-						// @ts-ignore
-						return updatedItem ? updatedItem.value : { ...item, outdated: true }
-					})
+    return {
+      title,
+      price,
+      ogPrice: price === ogPrice ? '' : ogPrice,
+      saleEnds,
+      url
+    }
+  } catch (err) {
+    throw err
+  }
+}
 
-					const newWishlist = {
-						items: updatedItems,
-						lastUpdated: Date.now()
-					}
-					updateBadge(updatedItems)
-					updateWishlist(newWishlist, true).then(resolve)
-				})
-				.catch(err => {
-					console.log('Data refresh error: ', err)
-					resolve()
-				})
-		})
-	})
+export async function refreshPriceData (): Promise<void> {
+  return await new Promise((resolve) => {
+    getWishlist(wishlist => {
+      if (wishlist.items.length === 0) {
+        return resolve()
+      }
+
+      const requests = wishlist.items.map(async item => await fetchAndScrapeUrl(item.url))
+
+      Promise.allSettled(requests)
+        .then(results => {
+          const updatedItems = wishlist.items.map(item => {
+            const updatedItem = results.find(el => el.status === 'fulfilled' && el.value.url === item.url)
+            // @ts-expect-error
+            return updatedItem ? updatedItem.value : { ...item, outdated: true }
+          })
+
+          const newWishlist = {
+            items: updatedItems,
+            lastUpdated: Date.now()
+          }
+          updateBadge(updatedItems)
+          updateWishlist(newWishlist, true).then(resolve)
+        })
+        .catch(err => {
+          console.log('Data refresh error: ', err)
+          resolve()
+        })
+    })
+  })
 }

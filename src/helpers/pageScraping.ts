@@ -11,15 +11,20 @@ function pickBetween (input: string, start: string, end: string) {
   return null
 }
 
-function getPrice (html: string) { // Sometimes price field has random strings, so we do 2 tries
-  const firstTry = pickBetween(html, '"discountedPrice":"', '",')
-  if (firstTry && Boolean(firstTry.match(NUMERIC_REGEXP))) {
-    return firstTry
-  }
-  const parsed_1 = html.split('"discountedPrice":"')
-  if (parsed_1.length > 1) {
-    const parsed_2 = parsed_1[2].split('",')
-    return parsed_2[0]
+function getPrice (html: string) {
+  const attempts = [1, 2, 3, 4] // Try indices 1, 2, 3, 4 after splitting
+
+  for (const attemptIndex of attempts) {
+    const parsed_1 = html.split('"discountedPrice":"')
+
+    if (parsed_1.length > attemptIndex) {
+      const parsed_2 = parsed_1[attemptIndex].split('",')
+      const candidate = parsed_2[0]
+
+      if (candidate && Boolean(candidate.match(NUMERIC_REGEXP))) {
+        return candidate
+      }
+    }
   }
   return null
 }

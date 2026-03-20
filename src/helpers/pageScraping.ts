@@ -5,8 +5,9 @@ import type { WishlistItem } from '../types'
 function pickBetween (input: string, start: string, end: string) {
   const parsed_1 = input.split(start)
   if (parsed_1.length > 1) {
-    const parsed_2 = parsed_1[1].split(end)
-    return parsed_2[0]
+    // const parsed_2 = parsed_1[1].split(end)
+    // Try multiple in case there's Game Trial
+    return parsed_1[1].split(end)[0] || parsed_1[2].split(end)[0]
   }
   return null
 }
@@ -36,7 +37,7 @@ export async function fetchAndScrapeUrl (url: string): Promise<WishlistItem> {
     const title = pickBetween(html, 'data-qa="mfe-game-title#name">', '</h1>') || pickBetween(html, '<h1 class="game-title">', '</h1>')
     const price = getPrice(html)
     const ogPrice = pickBetween(html, '"originalPrice":"', '",') || ''
-    const saleEnds = pickBetween(html, 'data-qa="mfeCtaMain#offer0#discountDescriptor" class="psw-c-t-2">', '</span>') || ''
+    const saleEnds = pickBetween(html, 'data-qa="mfeCtaMain#offer0#discountDescriptor" class="psw-c-t-2">', '</span>') || pickBetween(html, 'data-qa="mfeCtaMain#offer1#discountDescriptor" class="psw-c-t-2">', '</span>') || ''
 
     // const nextData = pickBetween(html, '<script id="__NEXT_DATA__" type="application/json">', '</script>')
 

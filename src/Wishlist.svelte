@@ -52,7 +52,7 @@
 					<a href={item.url} target="_blank">{item.title}</a>
 					<div class="text-small">
 						{item.outdated
-							? "Price info might be outdated!"
+							? "Price could not be updated"
 							: item.saleEnds}
 					</div>
 				</div>

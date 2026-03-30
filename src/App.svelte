@@ -23,7 +23,7 @@
 	let refreshing: boolean;
 
 	function getSortedList(_sortBy, _sortOrder, _list) {
-		const filteredList = _list.filter(item => Boolean(item.price.match(NUMERIC_REGEXP)))
+		const filteredList = _list.filter(item => Boolean(item.price && item.price.match(NUMERIC_REGEXP)))
 
 		const sort = (item) => {
 			if (_sortBy === "price") {

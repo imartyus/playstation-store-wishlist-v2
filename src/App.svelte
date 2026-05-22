@@ -114,23 +114,23 @@
 	<img class="logo" src="ps-icon-128.png" alt="" />
 	{#if gameList.length}
 		<Wishlist bind:gameList bind:sortBy bind:sortOrder />
-		<section class="bottom-actions">
-			<div>
-				<button
-					class="manual-refresh-button"
-					on:click={manualRefresh}
-					disabled={refreshing}
-				>
-					{refreshing ? "Refreshing..." : "Refresh prices 🔄"}
-				</button>
-				{#if lastUpdated}
-					<div class="last-updated">
-						Last updated: <span>{lastUpdated}</span>
-					</div>
-				{/if}
-			</div>
-		</section>
 	{/if}
+	<section class="bottom-actions">
+		<div>
+			<button
+				class="manual-refresh-button"
+				on:click={manualRefresh}
+				disabled={refreshing}
+			>
+				{refreshing ? "Refreshing..." : "Refresh prices 🔄"}
+			</button>
+			{#if lastUpdated}
+				<div class="last-updated">
+					Last updated: <span>{lastUpdated}</span>
+				</div>
+			{/if}
+		</div>
+	</section>
 </main>
 
 <style>

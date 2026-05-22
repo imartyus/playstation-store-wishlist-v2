@@ -7,7 +7,7 @@ function pickBetween (input: string, start: string, end: string) {
   if (parsed_1.length > 1) {
     // const parsed_2 = parsed_1[1].split(end)
     // Try multiple in case there's Game Trial
-    return parsed_1[1].split(end)[0] || parsed_1[2].split(end)[0]
+    return parsed_1[1]?.split(end)[0] || parsed_1[2]?.split(end)[0]
   }
   return null
 }
@@ -19,7 +19,7 @@ function getPrice (html: string) {
     const parsed_1 = html.split('"discountedPrice":"')
 
     if (parsed_1.length > attemptIndex) {
-      const parsed_2 = parsed_1[attemptIndex].split('",')
+      const parsed_2 = parsed_1[attemptIndex]?.split('",')
       const candidate = parsed_2[0]
 
       if (candidate && Boolean(candidate.match(NUMERIC_REGEXP))) {
@@ -66,7 +66,6 @@ export async function refreshPriceData (): Promise<void> {
         .then(results => {
           const updatedItems = wishlist.items.map(item => {
             const updatedItem = results.find(el => el.status === 'fulfilled' && el.value.url === item.url)
-            // @ts-expect-error
             return updatedItem ? updatedItem.value : { ...item, outdated: true }
           })
 
